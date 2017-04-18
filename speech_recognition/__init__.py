@@ -764,11 +764,11 @@ class Recognizer(AudioSource):
         if "transcript" not in best_hypothesis: raise UnknownValueError()
         return best_hypothesis["transcript"]
 
-    def recognize_google_cloud(self, audio_data, credentials_json=None, language="en-US", preferred_phrases=None, show_all=False):
+    def recognize_google_cloud(self, audio_data, credentials_json=None, credentials_file=None, language="en-US", preferred_phrases=None, show_all=False):
         """
         Performs speech recognition on ``audio_data`` (an ``AudioData`` instance), using the Google Cloud Speech API.
 
-        This function requires a Google Cloud Platform account; see the `Google Cloud Speech API Quickstart <https://cloud.google.com/speech/docs/getting-started>`__ for details and instructions. Basically, create a project, enable billing for the project, enable the Google Cloud Speech API for the project, and set up Service Account Key credentials for the project. The result is a JSON file containing the API credentials. The text content of this JSON file is specified by ``credentials_json``. If not specified, the library will try to automatically `find the default API credentials JSON file <https://developers.google.com/identity/protocols/application-default-credentials>`__.
+        This function requires a Google Cloud Platform account; see the `Google Cloud Speech API Quickstart <https://cloud.google.com/speech/docs/getting-started>`__ for details and instructions. Basically, create a project, enable billing for the project, enable the Google Cloud Speech API for the project, and set up Service Account Key credentials for the project. The result is a JSON file containing the API credentials. The path to this JSON file is specified by ``credentials_file``. The text content of this JSON file is specified by ``credentials_json``. If not specified, the library will try to automatically `find the default API credentials JSON file <https://developers.google.com/identity/protocols/application-default-credentials>`__.
 
         The recognition language is determined by ``language``, which is a BCP-47 language tag like ``"en-US"`` (US English). A list of supported language tags can be found in the `Google Cloud Speech API documentation <https://cloud.google.com/speech/docs/languages>`__.
 
@@ -779,7 +779,7 @@ class Recognizer(AudioSource):
         Raises a ``speech_recognition.UnknownValueError`` exception if the speech is unintelligible. Raises a ``speech_recognition.RequestError`` exception if the speech recognition operation failed, if the credentials aren't valid, or if there is no Internet connection.
         """
         assert isinstance(audio_data, AudioData), "``audio_data`` must be audio data"
-        if credentials_json is not None:
+        if credentials_file is None && credentials_json is not None:
             try: json.loads(credentials_json)
             except: raise AssertionError("``credentials_json`` must be ``None`` or a valid JSON string")
         assert isinstance(language, str), "``language`` must be a string"
@@ -796,8 +796,10 @@ class Recognizer(AudioSource):
             from googleapiclient.discovery import build
             import googleapiclient.errors
 
-            if credentials_json is None:
+            if credentials_json is None && credentials_file is None:
                 api_credentials = GoogleCredentials.get_application_default()
+            elif credentials_file:
+                api_credentials = GoogleCredentials.from_stream(credentials_file)
             else:
                 # the credentials can only be read from a file, so we'll make a temp file and write in the contents to work around that
                 with PortableNamedTemporaryFile("w") as f:
