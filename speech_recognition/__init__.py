@@ -779,7 +779,7 @@ class Recognizer(AudioSource):
         Raises a ``speech_recognition.UnknownValueError`` exception if the speech is unintelligible. Raises a ``speech_recognition.RequestError`` exception if the speech recognition operation failed, if the credentials aren't valid, or if there is no Internet connection.
         """
         assert isinstance(audio_data, AudioData), "``audio_data`` must be audio data"
-        if credentials_file is None && credentials_json is not None:
+        if credentials_file is None and credentials_json is not None:
             try: json.loads(credentials_json)
             except: raise AssertionError("``credentials_json`` must be ``None`` or a valid JSON string")
         assert isinstance(language, str), "``language`` must be a string"
@@ -796,7 +796,7 @@ class Recognizer(AudioSource):
             from googleapiclient.discovery import build
             import googleapiclient.errors
 
-            if credentials_json is None && credentials_file is None:
+            if credentials_json is None and credentials_file is None:
                 api_credentials = GoogleCredentials.get_application_default()
             elif credentials_file:
                 api_credentials = GoogleCredentials.from_stream(credentials_file)
